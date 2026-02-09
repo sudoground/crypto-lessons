@@ -930,3 +930,88 @@
     </script>
 </body>
 </html>
+        
+        // Module-specific quiz functions
+        function checkBasicsQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('basicsQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('basicsQuiz1Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong answer.';
+        }
+        function checkBasicsQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('basicsQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('basicsQuiz2Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong answer.';
+        }
+        function checkBasicsQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('basicsQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('basicsQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong answer.';
+            if (correct) completeModule('basics');
+        }
+        function checkHashQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hashQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hashQuiz1Feedback').textContent = correct ? '🎉 Correct! Avalanche effect!' : '❌ Wrong.';
+        }
+        function checkHashQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hashQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hashQuiz2Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkHashQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hashQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hashQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+            if (correct) completeModule('hashing');
+        }
+        function checkEncQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('encQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('encQuiz1Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkEncQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('encQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('encQuiz2Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkEncQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('encQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('encQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+            if (correct) completeModule('encryption');
+        }
+        function checkAttackQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('attackQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('attackQuiz1Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkAttackQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('attackQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('attackQuiz2Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkAttackQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('attackQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('attackQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+            if (correct) {
+                const hacks = parseInt(document.getElementById('hacksLearned').textContent) || 0;
+                document.getElementById('hacksLearned').textContent = hacks + 1;
+            }
+        }
+        function checkBlockchainQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('blockchainQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('blockchainQuiz1Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkBlockchainQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('blockchainQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('blockchainQuiz2Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+        function checkBlockchainQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('blockchainQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('blockchainQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+            if (correct) completeModule('blockchain');
+        }
