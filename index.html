@@ -734,6 +734,178 @@
     </div>
 
     <script>
+        // Matrix rain
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const drops = Array(Math.floor(canvas.width / 14)).fill(1);
+        setInterval(() => {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = '14px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, drops[i] * 14);
+                if (drops[i] * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }, 33);
+
+        function showModule(name) {
+            document.querySelectorAll('.module').forEach(m => m.classList.add('hidden'));
+            document.getElementById('module-' + name).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showAchievement(text) {
+            const div = document.createElement('div');
+            div.className = 'achievement';
+            div.textContent = text;
+            div.style.color = 'white';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        let completedModules = new Set();
+        let finalQuizAnswers = {};
+
+        function updateProgress() {
+            const percent = Math.round((completedModules.size / 6) * 100);
+            document.getElementById('progress').style.width = percent + '%';
+            document.getElementById('progress').textContent = percent + '%';
+            document.getElementById('modulesComplete').textContent = completedModules.size;
+        }
+
+        function completeModule(name) {
+            completedModules.add(name);
+            updateProgress();
+            showAchievement('🎉 Module Complete!');
+        }
+
+        function checkCaesar() {
+            const ans = document.getElementById('caesarAnswer').value.toUpperCase().trim();
+            const out = document.getElementById('caesarOutput');
+            out.classList.remove('hidden');
+            if (ans === 'HELLO WORLD' || ans === 'HELLO') {
+                out.className = 'output success';
+                out.textContent = '🎉 Correct! "KHOOR ZRUOG" → "HELLO WORLD"';
+                completeModule('basics');
+            } else {
+                out.className = 'output error';
+                out.textContent = '❌ Not quite. Shift each letter back by 3';
+            }
+        }
+
+        function simulateSymmetric() {
+            const key = document.getElementById('symmetricKey').value;
+            const msg = document.getElementById('symmetricMessage').value;
+            let enc = '';
+            for (let i = 0; i < msg.length; i++) {
+                enc += (msg.charCodeAt(i) ^ key.charCodeAt(i % key.length)).toString(16).padStart(2, '0');
+            }
+            let dec = '';
+            for (let i = 0; i < enc.length; i += 2) {
+                dec += String.fromCharCode(parseInt(enc.substr(i, 2), 16) ^ key.charCodeAt((i/2) % key.length));
+            }
+            document.getElementById('symmetricOutput').className = 'output';
+            document.getElementById('symmetricOutput').innerHTML = '<strong>Original:</strong> ' + msg + '\n<strong>Encrypted:</strong> ' + enc + '\n<strong>Decrypted:</strong> ' + dec;
+        }
+
+        async function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash &= hash;
+            }
+            return Math.abs(hash).toString(16).padStart(8, '0');
+        }
+
+        async function computeHash() {
+            const input = document.getElementById('hashInput').value;
+            const hash = await simpleHash(input);
+            document.getElementById('hashOutput').className = 'output';
+            document.getElementById('hashOutput').innerHTML = '<strong>SHA-256 (demo):</strong>\n' + hash + '\n\n<small style="color: #f59e0b;">Tip: Change one character to see the avalanche effect!</small>';
+        }
+
+        function checkQuiz(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hashQuizFeedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hashQuizFeedback').textContent = correct ? '🎉 Correct! Avalanche effect ensures small changes produce huge hash differences.' : '❌ Wrong. Try again!';
+            if (correct) completeModule('hashing');
+        }
+
+        function checkAttackQuiz(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('attackQuizFeedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('attackQuizFeedback').textContent = correct ? '🎉 Correct! Flash loan attacks manipulate DEX prices.' : '❌ Wrong answer.';
+            if (correct) document.getElementById('hacksLearned').textContent = ++hacksLearned || 1;
+        }
+
+        function checkBlockchainQuiz(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('blockchainQuizFeedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('blockchainQuizFeedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
+        }
+
+        function generateRSA() {
+            const p = 61, q = 53;
+            const n = p * q;
+            const phi = (p - 1) * (q - 1);
+            let e = 17;
+            const d = modInverse(e, phi);
+            document.getElementById('rsaOutput').className = 'output';
+            document.getElementById('rsaOutput').innerHTML = '<strong>Simplified RSA Demo:</strong>\nPublic Key (n=' + n + ', e=' + e + ')\nPrivate Key (n=' + n + ', d=' + d + ')\n\n<small>In real RSA, primes are 300+ digits!</small>';
+        }
+
+        function modInverse(a, m) {
+            for (let x = 1; x < m; x++) if (((a % m) * (x % m)) % m === 1) return x;
+            return 1;
+        }
+
+        function startBruteForce() {
+            const target = document.getElementById('targetPassword').value;
+            let attempts = 0;
+            const chars = 'abcdefghijklmnopqrstuvwxyz';
+            let guess = '';
+            const interval = setInterval(() => {
+                attempts++;
+                guess = chars[Math.floor(Math.random() * chars.length)];
+                document.getElementById('bruteForceOutput').className = 'output';
+                document.getElementById('bruteForceOutput').innerHTML = '<strong>Attempt ' + attempts + ':</strong> Trying "' + guess + '"...';
+                if (guess === target || attempts > 50) {
+                    clearInterval(interval);
+                    document.getElementById('bruteForceOutput').innerHTML = '<strong>Result:</strong> ' + (attempts > 50 ? 'Too many attempts! Real brute force uses smarter wordlists.' : 'Found it!');
+                }
+            }, 100);
+        }
+
+        function simulateMining() {
+            let attempts = 0;
+            const interval = setInterval(() => {
+                attempts++;
+                const hash = Math.random().toString(16).substring(2, 10);
+                document.getElementById('miningOutput').className = 'output';
+                document.getElementById('miningOutput').innerHTML = '<strong>Hash attempt ' + attempts + ':</strong> ' + hash;
+                if (hash.startsWith('00')) {
+                    clearInterval(interval);
+                    document.getElementById('miningOutput').innerHTML = '<strong>🎉 Block found!</strong>\nHash: ' + hash + '\nNonce: ' + attempts + '\n<small>Real mining requires many leading zeros!</small>';
+                }
+            }, 50);
+        }
+
+        function checkFinal(qNum, el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            finalQuizAnswers[qNum] = correct;
+            if (Object.keys(finalQuizAnswers).length === 5) {
+                const score = Object.values(finalQuizAnswers).filter(Boolean).length;
+                document.getElementById('quizResults').className = 'output success';
+                document.getElementById('quizResults').innerHTML = '<strong>🎉 Final Score: ' + score + '/5</strong><br>' + (score >= 4 ? '🌟 Excellent!' : score >= 3 ? '👍 Good job!' : '📚 Review and try again!');
+            }
+        }
+
         // Advanced attack quiz functions
         function checkAdvQuiz1(el, correct) {
             el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
@@ -753,7 +925,7 @@
         function simulatePaddingOracle() {
             const input = document.getElementById('oracleCipher').value;
             document.getElementById('oracleOutput').className = 'output';
-            document.getElementById('oracleOutput').innerHTML = `<strong>Padding Oracle Attack Demo:</strong>\n\nTarget: ${input}\n\nIn a real attack:\n1. Send modified ciphertext to oracle\n2. Observe error (valid/invalid padding)\n3. Flip bits to decrypt byte-by-byte\n4. Recover full plaintext\n\n<small>⚠️ This is a simulation. Real attacks require server with padding oracle vulnerability.</small>`;
+            document.getElementById('oracleOutput').innerHTML = '<strong>Padding Oracle Attack Demo:</strong>\n\nTarget: ' + input + '\n\nIn a real attack:\n1. Send modified ciphertext to oracle\n2. Observe error (valid/invalid padding)\n3. Flip bits to decrypt byte-by-byte\n4. Recover full plaintext\n\n<small>⚠️ This is a simulation. Real attacks require server with padding oracle vulnerability.</small>';
         }
     </script>
 </body>
