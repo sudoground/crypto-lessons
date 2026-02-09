@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Cryptography Crash Course</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 2px solid #e94560;
+        }
+        h1 { color: #e94560; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #94a3b8; font-size: 1.1em; }
+        .progress-bar {
+            background: #334155;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .module {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .module:hover { border-color: #e94560; transform: translateY(-2px); }
+        .module h2 { color: #e94560; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .tag {
+            background: #e94560;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            margin-left: auto;
+        }
+        .tag.basics { background: #10b981; }
+        .tag.hack { background: #f59e0b; }
+        .interactive-demo {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Consolas', monospace;
+        }
+        .code-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .code-input:focus { outline: none; border-color: #e94560; }
+        .btn {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(233,69,96,0.4); }
+        .btn.secondary { background: #334155; }
+        .output {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            min-height: 60px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .output.error { border-left: 4px solid #ef4444; }
+        .output.success { border-left: 4px solid #10b981; }
+        .quiz-options { display: grid; gap: 10px; margin: 15px 0; }
+        .quiz-option {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .quiz-option:hover { border-color: #e94560; }
+        .quiz-option.correct { border-color: #10b981; background: rgba(16,185,129,0.1); }
+        .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .hidden { display: none !important; }
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1000;
+            animation: bounce 0.5s ease;
+            box-shadow: 0 10px 40px rgba(233,69,96,0.5);
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .nav-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover, .nav-item.active { background: #e94560; }
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value { font-size: 2em; color: #e94560; font-weight: bold; }
+        .tool-section {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .tool-title { color: #e94560; font-weight: bold; margin-bottom: 10px; }
+        .tool-desc { color: #94a3b8; margin-bottom: 15px; }
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .resource-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 3px solid #e94560;
+        }
+        .resource-card h4 { color: #e94560; margin-bottom: 10px; }
+        .resource-card ul { margin-left: 15px; line-height: 1.8; }
+        .resource-card li { margin: 5px 0; }
+        .morse-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 5px;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .morse-item {
+            background: #1e293b;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .morse-char { color: #e94560; font-weight: bold; }
+        .morse-code { color: #10b981; }
+        .strength-meter {
+            height: 10px;
+            background: #334155;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        .vigenere-table {
+            font-size: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix" class="matrix-bg"></canvas>
+    <header>
+        <div class="container">
+            <h1>🔐 Cryptography Crash Course</h1>
+            <p class="subtitle">Master the art of secrets • From basics to trending hacks</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress" style="width: 0%">0%</div>
+            </div>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="modulesComplete">0</div>
+                    <div class="stat-label">Modules Complete</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="quizzesComplete">0</div>
+                    <div class="stat-label">Quizzes Passed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="hacksLearned">0</div>
+                    <div class="stat-label">Hacks Learned</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-item active" onclick="showModule('welcome')">🏠 Home</div>
+            <div class="nav-item" onclick="showModule('basics')">📚 Basics</div>
+            <div class="nav-item" onclick="showModule('hashing')">🔒 Hashing</div>
+            <div class="nav-item" onclick="showModule('encryption')">🔐 Encryption</div>
+            <div class="nav-item" onclick="showModule('attacks')">⚔️ Attacks</div>
+            <div class="nav-item" onclick="showModule('blockchain')">⛓️ Blockchain</div>
+            <div class="nav-item" onclick="showModule('advanced-attacks')">🎯 Advanced</div>
+            <div class="nav-item" onclick="showModule('tools')">🛠️ Tools</div>
+            <div class="nav-item" onclick="showModule('resources')">📚 Resources</div>
+            <div class="nav-item" onclick="showModule('quiz')">🎯 Quiz</div>
+        </nav>
+
+        <!-- MODULE 0: Welcome -->
+        <div id="module-welcome" class="module">
+            <h2>🚀 Welcome to Cryptography</h2>
+            <p>Learn the fundamental concepts of cryptography and explore real-world attack techniques used by security researchers and ethical hackers.</p>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">What is Cryptography?</h3>
+                <p style="margin-bottom: 15px;">Cryptography enables:</p>
+                <ul style="margin-left: 20px; line-height: 2;">
+                    <li><strong>Confidentiality</strong> - Only authorized parties can read</li>
+                    <li><strong>Integrity</strong> - Messages cannot be altered</li>
+                    <li><strong>Authentication</strong> - Verify sender identity</li>
+                    <li><strong>Non-repudiation</strong> - Cannot deny sending</li>
+                </ul>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quick Challenge: Decode this!</h3>
+                <p>Caesar cipher with shift of 3. Decode: <strong style="color: #10b981;">KHOOR ZRUOG</strong></p>
+                <input type="text" class="code-input" id="caesarAnswer" placeholder="Enter your answer...">
+                <button class="btn" onclick="checkCaesar()">Decode</button>
+                <div id="caesarOutput" class="output hidden"></div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="showModule('basics')">Start Learning →</button>
+            </div>
+        </div>
+
+        <!-- MODULE 1: Basics -->
+        <div id="module-basics" class="module hidden">
+            <h2>📚 Module 1: Cryptography Basics</h2>
+            <span class="tag basics">BEGINNER</span>
+            <div class="tool-section">
+                <div class="tool-title">🔑 Plaintext vs Ciphertext</div>
+                <div class="tool-desc"><strong>Plaintext</strong> = Human-readable data<br><strong>Ciphertext</strong> = Encrypted, unreadable data</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">🔐 Symmetric vs Asymmetric</div>
+                <div class="tool-desc"><strong>Symmetric:</strong> Same key (fast)<br><strong>Asymmetric:</strong> Public + Private keys (secure)</div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Symmetric Encryption Demo</h3>
+                <input type="text" class="code-input" id="symmetricKey" placeholder="Secret key" value="SECRET">
+                <input type="text" class="code-input" id="symmetricMessage" placeholder="Message to encrypt" value="Hello World">
+                <button class="btn" onclick="simulateSymmetric()">Encrypt / Decrypt</button>
+                <div id="symmetricOutput" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> What does confidentiality ensure?</p>
+                <div class="quiz-options" id="basicsQuiz1">
+                    <div class="quiz-option" onclick="checkBasicsQuiz1(this, true)">A) Only authorized parties can read the data</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz1(this, false)">B) Messages cannot be altered</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz1(this, false)">C) Verify sender identity</div>
+                </div>
+                <div id="basicsQuiz1Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> Symmetric encryption uses how many keys?</p>
+                <div class="quiz-options" id="basicsQuiz2">
+                    <div class="quiz-option" onclick="checkBasicsQuiz2(this, true)">A) One key</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz2(this, false)">B) Two keys</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz2(this, false)">C) Three keys</div>
+                </div>
+                <div id="basicsQuiz2Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> Which property ensures a sender cannot deny sending a message?</p>
+                <div class="quiz-options" id="basicsQuiz3">
+                    <div class="quiz-option" onclick="checkBasicsQuiz3(this, false)">A) Confidentiality</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz3(this, false)">B) Integrity</div>
+                    <div class="quiz-option" onclick="checkBasicsQuiz3(this, true)">C) Non-repudiation</div>
+                </div>
+                <div id="basicsQuiz3Feedback" class="output hidden"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('welcome')">← Back</button>
+                <button class="btn" onclick="showModule('hashing')">Next: Hashing →</button>
+            </div>
+        </div>
+
+        <!-- MODULE 2: Hashing -->
+        <div id="module-hashing" class="module hidden">
+            <h2>🔒 Module 2: Cryptographic Hashing</h2>
+            <span class="tag basics">BEGINNER</span>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">What is a Hash Function?</h3>
+                <p>Takes input → fixed-size output (digest). Key properties:</p>
+                <ul style="margin: 10px 0 10px 20px; line-height: 2;">
+                    <li>✅ Deterministic (same input = same output)</li>
+                    <li>✅ Fast to compute</li>
+                    <li>❌ Pre-image resistant (can't reverse)</li>
+                    <li>❌ Collision resistant</li>
+                </ul>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Try Hashing</h3>
+                <input type="text" class="code-input" id="hashInput" placeholder="Enter text..." value="Hello World">
+                <button class="btn secondary" onclick="computeHash()">Compute Hash</button>
+                <div id="hashOutput" class="output hidden"></div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">💡 Use Cases</div>
+                <div class="tool-desc">Password storage, file integrity, digital signatures, blockchain, MAC</div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> If you change ONE character, what happens to the hash?</p>
+                <div class="quiz-options" id="hashQuiz1">
+                    <div class="quiz-option" onclick="checkHashQuiz1(this, false)">A) Nothing, it's the same</div>
+                    <div class="quiz-option" onclick="checkHashQuiz1(this, true)">B) Completely different hash</div>
+                    <div class="quiz-option" onclick="checkHashQuiz1(this, false)">C) Only last character changes</div>
+                </div>
+                <div id="hashQuiz1Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> Which property means you can't reverse a hash to get the original input?</p>
+                <div class="quiz-options" id="hashQuiz2">
+                    <div class="quiz-option" onclick="checkHashQuiz2(this, false)">A) Deterministic</div>
+                    <div class="quiz-option" onclick="checkHashQuiz2(this, true)">B) Pre-image resistance</div>
+                    <div class="quiz-option" onclick="checkHashQuiz2(this, false)">C) Fast computation</div>
+                </div>
+                <div id="hashQuiz2Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> Why should you NOT use MD5 for password storage today?</p>
+                <div class="quiz-options" id="hashQuiz3">
+                    <div class="quiz-option" onclick="checkHashQuiz3(this, false)">A) It's too slow</div>
+                    <div class="quiz-option" onclick="checkHashQuiz3(this, true)">B) Vulnerable to collisions and rainbow tables</div>
+                    <div class="quiz-option" onclick="checkHashQuiz3(this, false)">C) Output is too small</div>
+                </div>
+                <div id="hashQuiz3Feedback" class="output hidden"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('basics')">← Basics</button>
+                <button class="btn" onclick="showModule('encryption')">Next: Encryption →</button>
+            </div>
+        </div>
+
+        <!-- MODULE 3: Encryption -->
+        <div id="module-encryption" class="module hidden">
+            <h2>🔐 Module 3: Modern Encryption</h2>
+            <span class="tag" style="background: #3b82f6;">INTERMEDIATE</span>
+            <div class="tool-section">
+                <div class="tool-title">AES Modes</div>
+                <div class="tool-desc"><strong>ECB:</strong> Not secure (reveals patterns)<br><strong>CBC:</strong> Secure (uses IV)<br><strong>GCM:</strong> Authenticated encryption</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">RSA (Asymmetric)</div>
+                <div class="tool-desc"><strong>Public Key:</strong> Share with everyone<br><strong>Private Key:</strong> Keep secret<br>Based on factoring large primes.</div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 RSA Key Demo</h3>
+                <button class="btn" onclick="generateRSA()">Generate RSA Keys</button>
+                <div id="rsaOutput" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> What does ECB mode NOT hide?</p>
+                <div class="quiz-options" id="encQuiz1">
+                    <div class="quiz-option" onclick="checkEncQuiz1(this, true)">A) Data patterns (identical blocks look same)</div>
+                    <div class="quiz-option" onclick="checkEncQuiz1(this, false)">B) The original message content</div>
+                    <div class="quiz-option" onclick="checkEncQuiz1(this, false)">C) Key used for encryption</div>
+                </div>
+                <div id="encQuiz1Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> Which RSA key is used to DECRYPT messages?</p>
+                <div class="quiz-options" id="encQuiz2">
+                    <div class="quiz-option" onclick="checkEncQuiz2(this, false)">A) Public key</div>
+                    <div class="quiz-option" onclick="checkEncQuiz2(this, true)">B) Private key</div>
+                    <div class="quiz-option" onclick="checkEncQuiz2(this, false)">C) Both keys work</div>
+                </div>
+                <div id="encQuiz2Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> What mathematical problem is RSA based on?</p>
+                <div class="quiz-options" id="encQuiz3">
+                    <div class="quiz-option" onclick="checkEncQuiz3(this, true)">A) Factoring large prime numbers</div>
+                    <div class="quiz-option" onclick="checkEncQuiz3(this, false)">B) Discrete logarithm</div>
+                    <div class="quiz-option" onclick="checkEncQuiz3(this, false)">C) Elliptic curves</div>
+                </div>
+                <div id="encQuiz3Feedback" class="output hidden"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('hashing')">← Hashing</button>
+                <button class="btn" onclick="showModule('attacks')">Next: Attacks →</button>
+            </div>
+        </div>
+
+        <!-- MODULE 4: Attacks -->
+        <div id="module-attacks" class="module hidden">
+            <h2>⚔️ Module 4: Common Attacks</h2>
+            <span class="tag hack">ETHICAL HACKING</span>
+            <div class="tool-section">
+                <div class="tool-title">🔴 1. Reentrancy Attacks (DeFi)</div>
+                <div class="tool-desc">Drain funds by recursively calling withdrawal before balance updates.<br><strong>Example:</strong> The DAO hack - $60M stolen<br><strong>Fix:</strong> Checks-effects-interactions pattern</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">🟠 2. Flash Loan Attacks</div>
+                <div class="tool-desc">Use uncollateralized loans to manipulate DEX prices.<br><strong>2024 total:</strong> $1.5B+ stolen<br><strong>Fix:</strong> TWAP price oracles</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">🟡 3. Private Key Compromise</div>
+                <div class="tool-desc">Phishing, keyloggers, weak RNG, social engineering</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">🟢 4. Side-Channel Attacks</div>
+                <div class="tool-desc">Extract secrets from timing, power, electromagnetic radiation (e.g., Spectre/Meltdown)</div>
+            </div>
+            <div class="tool-section" style="border-left: 3px solid #8b5cf6;">
+                <div class="tool-title">🟣 5. Front-Running Attacks (MEV)</div>
+                <div class="tool-desc"><strong>MEV (Maximal Extractable Value):</strong> Miners reorder transactions for profit.<br><strong>How it works:</strong> Attacker sees pending transaction → submits same trade with higher gas → front-runs the victim.<br><strong>Examples:</strong> DEX arbitrage, liquidations, NFT minting sniping<br><strong>Impact:</strong> Estimated $500M+ extracted from Ethereum users in 2023<br><strong>Fix:</strong> Flashbots, encrypted mempools, commit-reveal schemes</div>
+            </div>
+            <div class="tool-section" style="border-left: 3px solid #ec4899;">
+                <div class="tool-title">🔴 6. Oracle Manipulation Attacks</div>
+                <div class="tool-desc"><strong>What are oracles?</strong> External data feeds that smart contracts rely on (price feeds, weather data, etc.)<br><strong>Attack method:</strong> Manipulate the oracle data source to trick the contract.<br><strong>Famous example:</strong> <strong>Synthetix Oracle Hack (2019)</strong> - Attacker manipulated price of sETH on an exchange, then used manipulated oracle to drain $3.7M in Synthetix sUSD.<br><strong>More examples:</strong> Various DeFi hacks using price oracle manipulation to trigger false liquidations or steal collateral<br><strong>Fix:</strong> Use time-weighted average prices (TWAP), multiple oracle sources, Chainlink decentralized oracles</div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Brute Force Demo</h3>
+                <input type="text" class="code-input" id="targetPassword" placeholder="Set password" value="abc">
+                <button class="btn secondary" onclick="startBruteForce()">Start Attack</button>
+                <div id="bruteForceOutput" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> "Flash loan → manipulate DEX price → drain pool → repay loan"</p>
+                <div class="quiz-options" id="attackQuiz1">
+                    <div class="quiz-option" onclick="checkAttackQuiz1(this, false)">A) Reentrancy</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz1(this, true)">B) Flash Loan Attack</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz1(this, false)">C) SQL Injection</div>
+                </div>
+                <div id="attackQuiz1Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> What does MEV stand for in front-running attacks?</p>
+                <div class="quiz-options" id="attackQuiz2">
+                    <div class="quiz-option" onclick="checkAttackQuiz2(this, false)">A) Maximum Exchange Value</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz2(this, false)">B) Multiple External Validation</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz2(this, true)">C) Maximal Extractable Value</div>
+                </div>
+                <div id="attackQuiz2Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> Oracle manipulation attacks target which component?</p>
+                <div class="quiz-options" id="attackQuiz3">
+                    <div class="quiz-option" onclick="checkAttackQuiz3(this, true)">A) External data feeds that smart contracts rely on</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz3(this, false)">B) The blockchain consensus mechanism</div>
+                    <div class="quiz-option" onclick="checkAttackQuiz3(this, false)">C) User's private keys</div>
+                </div>
+                <div id="attackQuiz3Feedback" class="output hidden"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('encryption')">← Encryption</button>
+                <button class="btn" onclick="showModule('blockchain')">Next: Blockchain →</button>
+            </div>
+        </div>
+
+        <!-- MODULE 5: Blockchain -->
+        <div id="module-blockchain" class="module hidden">
+            <h2>⛓️ Module 5: Blockchain Cryptography</h2>
+            <span class="tag" style="background: #8b5cf6;">ADVANCED</span>
+            <div class="tool-section">
+                <div class="tool-title">🔗 Hash Chains</div>
+                <div class="tool-desc">Each block contains previous block's hash - tamper-evident chain</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">⛏️ Proof of Work</div>
+                <div class="tool-desc">Miners find hash below target (nonce hunting)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">🔏 Digital Signatures</div>
+                <div class="tool-desc">ECDSA verifies transactions without revealing private keys</div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Simulate Mining</h3>
+                <p>Find hash starting with "00"</p>
+                <button class="btn" onclick="simulateMining()">Start Mining!</button>
+                <div id="miningOutput" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> Why is blockchain tamper-resistant?</p>
+                <div class="quiz-options" id="blockchainQuiz1">
+                    <div class="quiz-option" onclick="checkBlockchainQuiz1(this, true)">A) Changing one block breaks all hashes</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz1(this, false)">B) It's on multiple computers</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz1(this, false)">C) It uses fancy colors</div>
+                </div>
+                <div id="blockchainQuiz1Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> What signature algorithm does Bitcoin use?</p>
+                <div class="quiz-options" id="blockchainQuiz2">
+                    <div class="quiz-option" onclick="checkBlockchainQuiz2(this, true)">A) ECDSA (Elliptic Curve Digital Signature Algorithm)</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz2(this, false)">B) RSA</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz2(this, false)">C) DSA</div>
+                </div>
+                <div id="blockchainQuiz2Feedback" class="output hidden"></div>
+            </div>
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> In Proof of Work, what is the "nonce"?</p>
+                <div class="quiz-options" id="blockchainQuiz3">
+                    <div class="quiz-option" onclick="checkBlockchainQuiz3(this, true)">A) A number miners change to get valid hash</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz3(this, false)">B) The previous block's hash</div>
+                    <div class="quiz-option" onclick="checkBlockchainQuiz3(this, false)">C) The transaction data</div>
+                </div>
+                <div id="blockchainQuiz3Feedback" class="output hidden"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('attacks')">← Attacks</button>
+                <button class="btn" onclick="showModule('tools')">Next: Tools →</button>
+            </div
+        <!-- MODULE 6: Advanced Attack Categories -->
+        <div id="module-advanced-attacks" class="module hidden">
+            <h2>🎯 Module 6: Advanced Cryptographic Attacks</h2>
+            <span class="tag" style="background: #dc2626;">CRITICAL</span>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🟥 Block Cipher Mode Attacks (CBC Focus)</h3>
+            <div class="tool-section" style="border-left: 3px solid #ef4444;">
+                <div class="tool-title">Padding Oracle Attack</div>
+                <div class="tool-desc">Leaks plaintext via padding validation feedback.<br><strong>How it works:</strong> Server returns different errors for valid/invalid padding → attacker can decrypt ciphertext byte by byte.<br><strong>Famous:</strong> POODLE attack on SSLv3<br><strong>Fix:</strong> Use authenticated encryption (GCM), avoid padding in stream modes</div>
+            </div>
+            <div class="tool-section" style="border-left: 3px solid #f97316;">
+                <div class="tool-title">Bit-Flipping Attack</div>
+                <div class="tool-desc">Predictable plaintext changes via IV/block manipulation.<br><strong>How it works:</strong> Flip bits in IV → predictable changes in first plaintext block.<br><strong>Impact:</strong> Can modify ciphertext to produce desired plaintext without knowing key.<br><strong>Fix:</strong> Use authenticated encryption, proper IV randomization</div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🟨 Attack Models (Theoretical)</h3>
+            <div class="tool-section">
+                <div class="tool-title">Attack Model Comparison</div>
+                <div class="tool-desc">
+                    <table style="width: 100%; margin: 10px 0; font-size: 12px;">
+                    <tr style="background: #334155;"><th>Attack</th><th>Attacker Knows</th><th>Goal</th></tr>
+                    <tr><td>Ciphertext-Only (COA)</td><td>Only ciphertext</td><td>Guess key/plaintext</td></tr>
+                    <tr style="background: #1e293b;"><td>Known-Plaintext (KPA)</td><td>Some plaintext-cipher pairs</td><td>Derive key</td></tr>
+                    <tr><td>Chosen-Plaintext (CPA)</td><td>Chooses plaintext → gets cipher</td><td>Break algorithm</td></tr>
+                    <tr style="background: #1e293b;"><td>Chosen-Ciphertext (CCA)</td><td>Chooses cipher → gets plaintext</td><td>Full key recovery</td></tr>
+                    </table>
+                    <strong>Key insight:</strong> More power = harder to defend against
+                </div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🟩 Hash Function Attacks</h3>
+            <div class="tool-section">
+                <div class="tool-title">Collision Attack</div>
+                <div class="tool-desc">Find 2 different inputs → same hash.<br><strong>MD5/SHA1:</strong> Both broken (collision demonstrated)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Birthday Attack</div>
+                <div class="tool-desc">~2^(n/2) tries for collision on n-bit hash.<br><strong>128-bit hash:</strong> 2^64 operations (feasible for MD5)<br><strong>256-bit hash:</strong> 2^128 operations (infeasible)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Pre-image Attack</div>
+                <div class="tool-desc">Reverse hash to find original input.<br><strong>Goal:</strong> Given hash h, find m where H(m) = h</div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🟦 Side-Channel Attacks</h3>
+            <div class="tool-section">
+                <div class="tool-title">Timing Attack</div>
+                <div class="tool-desc">Measure operation time → extract key bits.<br><strong>Example:</strong> RSA with naive decryption takes time proportional to key bits</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Power Analysis</div>
+                <div class="tool-desc">Monitor CPU power draw patterns → extract keys from power consumption</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Cache Attack</div>
+                <div class="tool-desc">Timing shared CPU cache access → extract secrets (Spectre/Meltdown)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Fault Injection</div>
+                <div class="tool-desc">Glitch hardware to cause errors → exploit faulty output</div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🔴 Protocol/Network Attacks</h3>
+            <div class="tool-section">
+                <div class="tool-title">Replay Attack</div>
+                <div class="tool-desc">Reuse valid packets/tokens → authenticate as victim<br><strong>Fix:</strong> Timestamps, nonces, session tokens</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Man-in-the-Middle (MITM)</div>
+                <div class="tool-desc">Intercept + modify traffic between two parties<br><strong>Fix:</strong> Certificate pinning, mTLS, certificate transparency</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Downgrade Attack</div>
+                <div class="tool-desc">Force weaker protocol/cipher → exploit known vulnerabilities<br><strong>Example:</strong> TLS downgrade to SSLv3 (POODLE)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Padding Oracle on TLS</div>
+                <div class="tool-desc">BEAST, Lucky13 variants exploit CBC padding in TLS</div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">🟢 Brute Force + Practical Attacks</h3>
+            <div class="tool-section">
+                <div class="tool-title">Dictionary Attack</div>
+                <div class="tool-desc">Guess common passwords/keys from wordlists (rockyou.txt, top-10000-passwords)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Brute Force</div>
+                <div class="tool-desc">Try all possible keys.<br><strong>128-bit key:</strong> 2^128 ≈ 3.4×10^38 combinations (infeasible)<br><strong>56-bit DES:</strong> 2^56 ≈ 7.2×10^16 (cracked in 1998)</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Rainbow Tables</div>
+                <div class="tool-desc">Precompute hash lookups → reverse hashes instantly.<br><strong>Fix:</strong> Salt passwords! Never store unsalted hashes.</div>
+            </div>
+            <div class="tool-section">
+                <div class="tool-title">Meet-in-the-Middle</div>
+                <div class="tool-desc">Split key search space → reduce 2^n to 2^(n/2) + 2^(n/2)<br><strong>Example:</strong> Double DES: 2^56 × 2^56 → 2^57 (vs 2^112)</div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Padding Oracle Simulator</h3>
+                <p style="margin-bottom: 10px;">Try to decrypt by exploiting padding validation feedback!</p>
+                <input type="text" class="code-input" id="oracleCipher" placeholder="Enter ciphertext (hex)" value="a1b2c3d4e5f6">
+                <button class="btn" onclick="simulatePaddingOracle()">Attack!</button>
+                <div id="oracleOutput" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz: Attack Models</h3>
+                <p><strong>Q1:</strong> Attacker can choose plaintext and get ciphertext. What model?</p>
+                <div class="quiz-options" id="advQuiz1">
+                    <div class="quiz-option" onclick="checkAdvQuiz1(this, false)">A) Ciphertext-Only</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz1(this, false)">B) Known-Plaintext</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz1(this, true)">C) Chosen-Plaintext (CPA)</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz1(this, false)">D) Chosen-Ciphertext</div>
+                </div>
+                <div id="advQuiz1Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz: Hash Attacks</h3>
+                <p><strong>Q2:</strong> What attack exploits the birthday paradox on hashes?</p>
+                <div class="quiz-options" id="advQuiz2">
+                    <div class="quiz-option" onclick="checkAdvQuiz2(this, true)">A) Birthday Attack</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz2(this, false)">B) Pre-image Attack</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz2(this, false)">C) Collision Attack</div>
+                </div>
+                <div id="advQuiz2Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz: Side-Channel</h3>
+                <p><strong>Q3:</strong> Which attack uses CPU cache timing?</p>
+                <div class="quiz-options" id="advQuiz3">
+                    <div class="quiz-option" onclick="checkAdvQuiz3(this, false)">A) Power Analysis</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz3(this, true)">B) Cache Attack (Spectre/Meltdown)</div>
+                    <div class="quiz-option" onclick="checkAdvQuiz3(this, false)">C) Fault Injection</div>
+                </div>
+                <div id="advQuiz3Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('blockchain')">← Blockchain</button>
+                <button class="btn" onclick="showModule('quiz')">Final Quiz →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Advanced attack quiz functions
+        function checkAdvQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('advQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('advQuiz1Feedback').textContent = correct ? '🎉 Correct! CPA = attacker chooses plaintext, gets ciphertext.' : '❌ Wrong. CPA = Chosen-Plaintext Attack.';
+        }
+        function checkAdvQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('advQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('advQuiz2Feedback').textContent = correct ? '🎉 Correct! Birthday attack exploits collision probability at ~2^(n/2).' : '❌ Wrong.';
+        }
+        function checkAdvQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('advQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('advQuiz3Feedback').textContent = correct ? '🎉 Correct! Cache timing attacks like Spectre/Meltdown exploit shared cache.' : '❌ Wrong.';
+        }
+        function simulatePaddingOracle() {
+            const input = document.getElementById('oracleCipher').value;
+            document.getElementById('oracleOutput').className = 'output';
+            document.getElementById('oracleOutput').innerHTML = `<strong>Padding Oracle Attack Demo:</strong>\n\nTarget: ${input}\n\nIn a real attack:\n1. Send modified ciphertext to oracle\n2. Observe error (valid/invalid padding)\n3. Flip bits to decrypt byte-by-byte\n4. Recover full plaintext\n\n<small>⚠️ This is a simulation. Real attacks require server with padding oracle vulnerability.</small>`;
+        }
+    </script>
+</body>
+</html>
