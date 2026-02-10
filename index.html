@@ -258,6 +258,7 @@
             <div class="nav-item" onclick="showModule('basics')">📚 Basics</div>
             <div class="nav-item" onclick="showModule('hashing')">🔒 Hashing</div>
             <div class="nav-item" onclick="showModule('encryption')">🔐 Encryption</div>
+            <div class="nav-item" onclick="showModule('aes-hmac')">🔐 AES+HMAC</div>
             <div class="nav-item" onclick="showModule('attacks')">⚔️ Attacks</div>
             <div class="nav-item" onclick="showModule('blockchain')">⛓️ Blockchain</div>
             <div class="nav-item" onclick="showModule('advanced-attacks')">🎯 Advanced</div>
@@ -456,6 +457,129 @@
             </div>
             <div class="nav-buttons">
                 <button class="btn secondary" onclick="showModule('hashing')">← Hashing</button>
+                <button class="btn" onclick="showModule('attacks')">Next: Attacks →</button>
+            </div>
+        </div>
+
+        <!-- NEW: AES + HMAC + Key Derivation -->
+        <div id="module-aes-hmac" class="module hidden">
+            <h2>🔐 Module 3b: AES-256-CBC + HMAC-SHA256 + Key Derivation</h2>
+            <span class="tag" style="background: #10b981;">ADVANCED</span>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">AES-256-CBC Explained</h3>
+            <div class="tool-section">
+                <div class="tool-title">What is AES-256-CBC?</div>
+                <div class="tool-desc">
+                    <strong>AES:</strong> Advanced Encryption Standard (symmetric block cipher)<br>
+                    <strong>256:</strong> 256-bit key length (most secure)<br>
+                    <strong>CBC:</strong> Cipher Block Chaining mode<br><br>
+                    <strong>How CBC works:</strong><br>
+                    1. Plaintext divided into 16-byte blocks<br>
+                    2. Each block XORed with previous ciphertext block<br>
+                    3. First block XORed with random IV (Initialization Vector)<br>
+                    4. Each block encrypted with AES-256
+                </div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">Why Add HMAC-SHA256?</h3>
+            <div class="tool-section">
+                <div class="tool-title">Authenticated Encryption (AEAD)</div>
+                <div class="tool-desc">
+                    <strong>Problem:</strong> CBC mode doesn't detect tampering!<br>
+                    <strong>Solution:</strong> Add HMAC for integrity + authenticity<br><br>
+                    <strong>HMAC-SHA256:</strong><br>
+                    - SHA-256 hash (256-bit output)<br>
+                    - HMAC = Hash-based Message Authentication Code<br>
+                    - Verifies message came from sender + wasn't tampered
+                </div>
+            </div>
+            
+            <div class="tool-section" style="border-left: 4px solid #10b981;">
+                <div class="tool-title">⚠️ Encrypt-then-MAC (Correct!)</div>
+                <div class="tool-desc">
+                    <strong>Order matters:</strong><br>
+                    1. Encrypt plaintext with AES-256-CBC → ciphertext<br>
+                    2. MAC ciphertext with HMAC-SHA256 → tag<br>
+                    3. Send: IV + ciphertext + tag<br><br>
+                    <strong>Why this order?</strong> Attacker can't forge valid MAC without encryption key.
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 AES-256-CBC + HMAC Simulator</h3>
+                <input type="text" class="code-input" id="encMessage" placeholder="Enter message" value="Secret Data">
+                <input type="password" class="code-input" id="encKey" placeholder="Encryption key (32 chars)" value="12345678901234567890123456789012">
+                <button class="btn" onclick="simulateAESHMAC()">Encrypt with AES-CBC + HMAC</button>
+                <div id="aesHmacOutput" class="output hidden"></div>
+            </div>
+            
+            <h3 style="color: #e94560; margin: 20px 0 10px;">SHA-256 Key Derivation</h3>
+            <div class="tool-section">
+                <div class="tool-title">Why Derive Keys?</div>
+                <div class="tool-desc">
+                    <strong>Problem:</strong> Passwords make bad encryption keys (low entropy)<br>
+                    <strong>Solution:</strong> Derive strong cryptographic keys from passwords<br><br>
+                    <strong>PBKDF2 / scrypt / Argon2:</strong><br>
+                    - Add salt (random data)<br>
+                    - Iterate thousands of times (slow down brute force)<br>
+                    - Output: strong key for encryption
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-title">Simple Key Derivation Demo</div>
+                <div class="tool-desc">
+                    <strong>Password:</strong> "hunter2"<br>
+                    <strong>Salt:</strong> "somesalt123"<br>
+                    <strong>Iterations:</strong> 100,000<br>
+                    <strong>Output:</strong> 256-bit derived key
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🧪 Key Derivation Simulator</h3>
+                <input type="text" class="code-input" id="passwordInput" placeholder="Enter password" value="hunter2">
+                <input type="text" class="code-input" id="saltInput" placeholder="Enter salt" value="somesalt123">
+                <input type="number" class="code-input" id="iterationsInput" placeholder="Iterations" value="100000">
+                <button class="btn" onclick="deriveKey()">Derive Key (PBKDF2-SHA256)</button>
+                <div id="keyDerivationOutput" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q1:</strong> In Encrypt-then-MAC, what do we MAC?</p>
+                <div class="quiz-options" id="hmacQuiz1">
+                    <div class="quiz-option" onclick="checkHmacQuiz1(this, true)">A) The ciphertext</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz1(this, false)">B) The plaintext</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz1(this, false)">C) Both</div>
+                </div>
+                <div id="hmacQuiz1Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q2:</strong> Why add salt to key derivation?</p>
+                <div class="quiz-options" id="hmacQuiz2">
+                    <div class="quiz-option" onclick="checkHmacQuiz2(this, false)">A) Makes password longer</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz2(this, true)">B) Prevents rainbow table attacks</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz2(this, false)">C) Speeds up computation</div>
+                </div>
+                <div id="hmacQuiz2Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="color: #e94560; margin-bottom: 15px;">🎯 Quiz</h3>
+                <p><strong>Q3:</strong> What does CBC stand for?</p>
+                <div class="quiz-options" id="hmacQuiz3">
+                    <div class="quiz-option" onclick="checkHmacQuiz3(this, false)">A) Cipher Block Code</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz3(this, true)">B) Cipher Block Chaining</div>
+                    <div class="quiz-option" onclick="checkHmacQuiz3(this, false)">C) Crypto Block Cipher</div>
+                </div>
+                <div id="hmacQuiz3Feedback" class="output hidden"></div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn secondary" onclick="showModule('encryption')">← Encryption</button>
                 <button class="btn" onclick="showModule('attacks')">Next: Attacks →</button>
             </div>
         </div>
@@ -1014,4 +1138,92 @@
             document.getElementById('blockchainQuiz3Feedback').className = correct ? 'output success' : 'output error';
             document.getElementById('blockchainQuiz3Feedback').textContent = correct ? '🎉 Correct!' : '❌ Wrong.';
             if (correct) completeModule('blockchain');
+        }
+        
+        // AES-CBC + HMAC functions
+        async function simulateAESHMAC() {
+            const msg = document.getElementById('encMessage').value;
+            const key = document.getElementById('encKey').value;
+            const output = document.getElementById('aesHmacOutput');
+            output.classList.remove('hidden');
+            
+            // Simulate IV generation
+            let iv = '';
+            for (let i = 0; i < 32; i++) {
+                iv += Math.floor(Math.random() * 16).toString(16);
+            }
+            
+            // Simulate AES encryption (simplified)
+            let ciphertext = '';
+            for (let i = 0; i < msg.length; i++) {
+                const charCode = msg.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ parseInt(iv.substr(i % 32, 2), 16);
+                ciphertext += charCode.toString(16).padStart(2, '0');
+            }
+            
+            // Simulate HMAC computation
+            let hmac = '';
+            for (let i = 0; i < ciphertext.length; i++) {
+                hmac += (ciphertext.charCodeAt(i % ciphertext.length) ^ key.charCodeAt(i % key.length)).toString(16).padStart(2, '0');
+            }
+            hmac = hmac.substring(0, 64); // SHA-256 = 64 hex chars
+            
+            output.innerHTML = '<strong>AES-256-CBC + HMAC-SHA256 Demo:</strong>\n\n' +
+                '<strong>IV (hex):</strong> ' + iv.substring(0, 32) + '...\n' +
+                '<strong>Ciphertext (hex):</strong> ' + ciphertext.substring(0, 40) + '...\n' +
+                '<strong>HMAC-SHA256 (hex):</strong> ' + hmac.substring(0, 40) + '...\n\n' +
+                '<small>📦 Sent: IV + Ciphertext + HMAC Tag</small>\n' +
+                '<small>🔐 Recipient: Decrypts with same key, verifies HMAC before accepting</small>';
+        }
+        
+        // Key derivation functions
+        async function deriveKey() {
+            const password = document.getElementById('passwordInput').value;
+            const salt = document.getElementById('saltInput').value;
+            const iterations = parseInt(document.getElementById('iterationsInput').value) || 100000;
+            const output = document.getElementById('keyDerivationOutput');
+            output.classList.remove('hidden');
+            
+            // Simplified PBKDF2-SHA256 simulation
+            let derivedKey = '';
+            let input = password + salt;
+            for (let i = 0; i < iterations; i++) {
+                let hash = 0;
+                for (let j = 0; j < input.length; j++) {
+                    hash = ((hash << 5) - hash) + input.charCodeAt(j);
+                    hash &= hash;
+                }
+                input = hash.toString(16) + salt + i;
+            }
+            
+            // Generate 256-bit (64 hex chars) key
+            for (let i = 0; i < 64; i++) {
+                derivedKey += input.charCodeAt(i % input.length).toString(16).padStart(2, '0');
+            }
+            
+            output.innerHTML = '<strong>PBKDF2-SHA256 Key Derivation:</strong>\n\n' +
+                '<strong>Password:</strong> ' + password + '\n' +
+                '<strong>Salt:</strong> ' + salt + '\n' +
+                '<strong>Iterations:</strong> ' + iterations.toLocaleString() + '\n\n' +
+                '<strong>Derived Key (256-bit):</strong>\n' + 
+                derivedKey.substring(0, 32) + '...\n' +
+                derivedKey.substring(32, 64) + '\n\n' +
+                '<small>🔑 This key can now be used for AES-256 encryption</small>\n' +
+                '<small>⚠️ More iterations = slower for attackers, more secure</small>';
+        }
+        
+        // HMAC Quiz functions
+        function checkHmacQuiz1(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hmacQuiz1Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hmacQuiz1Feedback').textContent = correct ? '🎉 Correct! Encrypt-then-MAC: MAC the ciphertext.' : '❌ Wrong. MAC the ciphertext (Encrypt-then-MAC).';
+        }
+        function checkHmacQuiz2(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hmacQuiz2Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hmacQuiz2Feedback').textContent = correct ? '🎉 Correct! Salt prevents rainbow tables.' : '❌ Wrong. Salt prevents rainbow table attacks.';
+        }
+        function checkHmacQuiz3(el, correct) {
+            el.className = correct ? 'quiz-option correct' : 'quiz-option wrong';
+            document.getElementById('hmacQuiz3Feedback').className = correct ? 'output success' : 'output error';
+            document.getElementById('hmacQuiz3Feedback').textContent = correct ? '🎉 Correct! CBC = Cipher Block Chaining.' : '❌ Wrong. CBC = Cipher Block Chaining.';
         }
